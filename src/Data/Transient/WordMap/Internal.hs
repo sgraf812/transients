@@ -45,7 +45,6 @@ import Data.Primitive.MutVar
 import Data.Transient.Primitive.SmallArray
 import Data.Transient.Primitive.Unsafe
 import Data.Word
-import qualified GHC.Exts as Exts
 import Prelude hiding (lookup, length, foldr)
 import GHC.Exts as Exts
 import GHC.ST
@@ -290,7 +289,7 @@ modifyM f (MWordMap r) = do
   writeMutVar r t'
 {-# INLINE modifyM #-}
 
-{-# RULES "persistent/transient" forall m. persistent (unsafeCoerce m) = return m #-}
+{-# RULES "persistent/transient" forall m. persistent (unsafeCoerce# m) = return m #-}
 
 -- | Query a transient structure with queries designed for an immutable structure.
 --

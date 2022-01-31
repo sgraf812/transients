@@ -3,7 +3,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE UnboxedTuples #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -271,7 +270,6 @@ instance Applicative SmallArray where
 instance Monad SmallArray where
   return = pure
   (>>) = (*>)
-  fail _ = empty
   m >>= f = foldMap f m
 
 instance MonadZip SmallArray where
@@ -304,9 +302,11 @@ instance Alternative SmallArray where
            s' -> copySmallArray# pn 0# po ilm iln s'
          unsafeFreezeSmallArray o
 
+instance Semigroup (SmallArray a) where
+  (<>) = (<|>)
+
 instance Monoid (SmallArray a) where
   mempty = empty
-  mappend = (<|>)
 
 instance Show a => Show (SmallArray a) where
   showsPrec d as = showParen (d > 10) $

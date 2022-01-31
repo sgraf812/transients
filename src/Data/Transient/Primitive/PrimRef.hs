@@ -5,7 +5,7 @@
 {-# LANGUAGE Unsafe #-}
 
 module Data.Transient.Primitive.PrimRef
-  ( 
+  (
   -- * Primitive References
     PrimRef(..)
   , newPrimRef
@@ -46,9 +46,9 @@ import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Data
 import Data.Primitive
+import Data.Word
 import Data.Transient.Primitive.Exts
-import GHC.Prim
-import GHC.Types (Int(I#))
+import GHC.Exts
 
 --------------------------------------------------------------------------------
 -- * Primitive References
@@ -91,7 +91,7 @@ readPrimRef (PrimRef m) = readByteArray m 0
 
 -- | Write a primitive value to the reference
 writePrimRef :: (PrimMonad m, Prim a) => PrimRef (PrimState m) a -> a -> m ()
-writePrimRef (PrimRef m) a = writeByteArray m 0 a
+writePrimRef (PrimRef m) = writeByteArray m 0
 {-# INLINE writePrimRef #-}
 
 instance Eq (PrimRef s a) where
@@ -100,7 +100,7 @@ instance Eq (PrimRef s a) where
 
 -- | Yield a pointer to the data of a 'PrimRef'. This operation is only safe on pinned byte arrays allocated by
 -- 'newPinnedPrimRef' or 'newAlignedPinnedPrimRef'.
-primRefContents :: PrimRef s a -> Addr
+primRefContents :: PrimRef s a -> Ptr Word8
 primRefContents (PrimRef m) = mutableByteArrayContents m
 {-# INLINE primRefContents #-}
 
@@ -134,7 +134,7 @@ unsafeThawPrimRef (FrozenPrimRef m) = PrimRef <$> unsafeThawByteArray m
 
 -- | Yield a pointer to the data of a 'FrozenPrimRef'. This operation is only safe on pinned byte arrays allocated by
 -- 'newPinnedPrimRef' or 'newAlignedPinnedPrimRef' and then subsequently frozen.
-frozenPrimRefContents :: FrozenPrimRef a -> Addr
+frozenPrimRefContents :: FrozenPrimRef a -> Ptr Word8
 frozenPrimRefContents (FrozenPrimRef m) = byteArrayContents m
 {-# INLINE frozenPrimRefContents #-}
 

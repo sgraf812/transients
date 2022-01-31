@@ -2,11 +2,9 @@
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE UnboxedTuples #-}
 {-# LANGUAGE Unsafe #-}
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UnliftedFFITypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -48,7 +46,6 @@ module Data.Transient.Primitive.Exts
   ) where
 
 import Control.Applicative
-import Control.DeepSeq
 import Control.Lens
 import Control.Monad.ST
 import Control.Monad.Primitive
@@ -153,13 +150,6 @@ prefetchValue3 a = primitive_ $ \s -> prefetchValue3# a s
 -- * Missing Array instances
 --------------------------------------------------------------------------------
 
-instance NFData a => NFData (Array a) where
-  rnf a0 = go a0 (length a0) 0 where
-    go !a !n !i
-      | i >= n = ()
-      | otherwise = rnf (indexArray a i) `seq` go a n (i+1)
-  {-# INLINE rnf #-}
-
 -- lens machinery
 
 type instance Index (Array a) = Int
@@ -219,18 +209,6 @@ instance Snoc (Array a) (Array b) a b where
 -- * Missing ByteArray instances
 --------------------------------------------------------------------------------
 
-instance Monoid ByteArray where
-  mempty = runST $ newByteArray 0 >>= unsafeFreezeByteArray
-  {-# NOINLINE mempty #-}
-  mappend m n = runST $ do
-    o <- newByteArray (lm + ln)
-    copyByteArray o 0 m 0 lm
-    copyByteArray o lm n 0 ln
-    unsafeFreezeByteArray o
-    where lm = sizeOfByteArray m
-          ln = sizeOfByteArray n
-  {-# INLINE mappend #-}
-
 -- * lens
 
 instance AsEmpty ByteArray where
@@ -239,7 +217,4 @@ instance AsEmpty ByteArray where
 --------------------------------------------------------------------------------
 -- * Missing MutableByteArray instances
 --------------------------------------------------------------------------------
-
-instance Eq (MutableByteArray s) where
-  (==) = sameMutableByteArray
 
